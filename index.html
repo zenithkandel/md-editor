@@ -53,11 +53,17 @@
       <section class="panes">
         <article class="pane">
           <div class="pane-header">
-            <span class="label">Markdown</span>
+            <span class="label"
+              ><i class="fa-solid fa-file-lines"></i><span>Markdown</span></span
+            >
             <div class="counts">
-              <span id="wordCount">0 words</span>
+              <span class="count-chip"
+                ><i class="fa-solid fa-font"></i><span id="wordCount">0 words</span></span
+              >
               <span class="sep">·</span>
-              <span id="charCount">0 chars</span>
+              <span class="count-chip"
+                ><i class="fa-solid fa-hashtag"></i><span id="charCount">0 chars</span></span
+              >
             </div>
           </div>
           <div class="toolbar">
@@ -89,7 +95,7 @@
                 title="Heading 1"
                 aria-label="Heading 1"
               >
-                <i class="fa-solid fa-heading"></i> 1
+                <i class="fa-solid fa-heading"></i><span class="lvl">1</span>
               </button>
               <button
                 class="tool-btn"
@@ -97,7 +103,7 @@
                 title="Heading 2"
                 aria-label="Heading 2"
               >
-                <i class="fa-solid fa-heading"></i> 2
+                <i class="fa-solid fa-heading"></i><span class="lvl">2</span>
               </button>
               <button
                 class="tool-btn"
@@ -105,7 +111,7 @@
                 title="Heading 3"
                 aria-label="Heading 3"
               >
-                <i class="fa-solid fa-heading"></i> 3
+                <i class="fa-solid fa-heading"></i><span class="lvl">3</span>
               </button>
             </div>
             <div class="tool-sep"></div>
@@ -233,11 +239,15 @@
 
         <article class="pane">
           <div class="pane-header">
-            <span class="label">Preview</span>
-            <span class="badge">Two-Way</span>
+            <span class="label"
+              ><i class="fa-solid fa-eye"></i><span>Preview</span></span
+            >
+            <span class="badge"><i class="fa-solid fa-arrows-rotate"></i> Live</span>
           </div>
           <div class="toolbar preview-toolbar">
-            <span class="hint">Editable — changes sync back to markdown</span>
+            <span class="hint"
+              ><i class="fa-solid fa-pen-to-square"></i> Editable • synced with markdown</span
+            >
           </div>
           <div
             id="preview"
@@ -308,7 +318,9 @@
           <i class="fa-solid fa-floppy-disk"></i
           ><span class="sr-only">Save</span>
         </button>
-        <span class="status" id="status">Ready</span>
+        <span class="status"
+          ><i class="fa-solid fa-circle-check"></i><span id="status">Ready</span></span
+        >
       </section>
     </main>
   </body>

@@ -103,6 +103,14 @@ main {
     letter-spacing: 1.2px;
     color: var(--muted);
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.label i {
+    font-size: 11px;
+    color: var(--accent);
 }
 
 .counts {
@@ -111,6 +119,17 @@ main {
     gap: 6px;
     font-size: 12px;
     color: var(--muted);
+}
+
+.count-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.count-chip i {
+    font-size: 10px;
+    opacity: 0.75;
 }
 
 .counts .sep {
@@ -126,6 +145,9 @@ main {
     font-weight: 700;
     letter-spacing: 0.6px;
     text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .toolbar {
@@ -171,10 +193,24 @@ main {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 4px;
+}
+
+.tool-btn .lvl {
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    transform: translateY(-0.5px);
 }
 
 .tool-btn:hover {
     background: #f4ede6;
+    border-color: #d3c7b9;
+}
+
+.tool-btn:active,
+.ghost:active {
+    transform: translateY(1px);
 }
 
 .tool-btn:disabled {
@@ -210,6 +246,10 @@ main {
     color: var(--ink);
     overflow: auto;
     min-height: 0;
+}
+
+.editor::placeholder {
+    color: #9b948b;
 }
 
 .preview {
@@ -288,6 +328,11 @@ main {
     justify-content: center;
 }
 
+.ghost i,
+.tool-btn i {
+    font-size: 13px;
+}
+
 .ghost:hover,
 .pill:hover {
     background: #f4ede6;
@@ -303,12 +348,21 @@ main {
     padding: 0 10px;
     display: inline-flex;
     align-items: center;
+    gap: 8px;
+}
+
+.status i {
+    font-size: 12px;
+    color: #6f9476;
 }
 
 .hint {
     color: var(--muted);
     font-size: 12.5px;
     line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 footer {
@@ -379,6 +433,28 @@ footer {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+}
+
+.portfolio-pill i {
+    font-size: 11px;
+}
+
+.editor::-webkit-scrollbar,
+.preview::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.editor::-webkit-scrollbar-thumb,
+.preview::-webkit-scrollbar-thumb {
+    background: #d4cdc3;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+.editor::-webkit-scrollbar-track,
+.preview::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .portfolio-pill:hover {
