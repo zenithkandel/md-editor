@@ -177,6 +177,13 @@ main {
     background: #f4ede6;
 }
 
+.tool-btn:focus-visible,
+.pill:focus-visible,
+.ghost:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 .tool-btn.primary {
     background: var(--accent);
     color: #fff;
@@ -264,6 +271,11 @@ main {
     padding: 10px 14px;
     border-radius: 10px;
     cursor: pointer;
+}
+
+.ghost:hover,
+.pill:hover {
+    background: #f4ede6;
 }
 
 .status {

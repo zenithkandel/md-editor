@@ -63,7 +63,9 @@ console.log('Hello, markdown');
         isSyncing = true;
         const raw = markdownInput.value;
         const html = DOMPurify.sanitize(marked.parse(raw));
+        const prevScroll = preview.scrollTop;
         preview.innerHTML = html;
+        preview.scrollTop = prevScroll;
         saveToLocal(raw);
         setStatus("Updated preview from markdown");
         isSyncing = false;
@@ -72,8 +74,14 @@ console.log('Hello, markdown');
     function renderFromPreview() {
         if (isSyncing) return;
         isSyncing = true;
-        const markdown = turndownService.turndown(preview.innerHTML);
+        const sanitized = DOMPurify.sanitize(preview.innerHTML, sanitizeOptions);
+        const markdown = turndownService.turndown(sanitized);
+        const prevScroll = markdownInput.scrollTop;
+        const selectionStart = markdownInput.selectionStart;
+        const selectionEnd = markdownInput.selectionEnd;
         markdownInput.value = markdown;
+        markdownInput.scrollTop = prevScroll;
+        markdownInput.setSelectionRange(selectionStart, selectionEnd);
         saveToLocal(markdown);
         setStatus("Updated markdown from preview");
         isSyncing = false;
@@ -184,8 +192,16 @@ console.log('Hello, markdown');
     markdownInput.addEventListener("keydown", handleShortcut);
 
     preview.addEventListener("input", () => {
-        preview.innerHTML = DOMPurify.sanitize(preview.innerHTML, sanitizeOptions);
         renderFromPreview();
+    });
+
+    preview.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const html = e.clipboardData.getData("text/html");
+        const text = e.clipboardData.getData("text/plain");
+        const payload = html || text;
+        const safe = DOMPurify.sanitize(payload, sanitizeOptions);
+        document.execCommand("insertHTML", false, safe);
     });
 
     loadFileBtn.addEventListener("click", () => filePicker.click());
