@@ -38,6 +38,8 @@
   const resetSampleBtn = document.getElementById("resetSample");
   const clearAllBtn    = document.getElementById("clearAll");
   const saveNowBtn     = document.getElementById("saveNow");
+  const undoBtn        = document.getElementById("undoBtn");
+  const redoBtn        = document.getElementById("redoBtn");
   const formatButtons  = document.querySelectorAll(".tool-btn");
 
   /* ──────────── Constants + state ──────────── */
@@ -60,6 +62,42 @@
   };
 
   let isSyncing = false;
+
+  /* ──────────── Undo / Redo history ──────────── */
+  const undoStack = [];
+  const redoStack = [];
+  const MAX_HISTORY = 100;
+
+  function pushHistory(value) {
+    if (undoStack.length > 0 && undoStack[undoStack.length - 1] === value) return;
+    undoStack.push(value);
+    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+    redoStack.length = 0;
+    updateHistoryButtons();
+  }
+
+  function undo() {
+    if (!markdownInput || undoStack.length === 0) return;
+    redoStack.push(markdownInput.value);
+    markdownInput.value = undoStack.pop();
+    renderFromMarkdown();
+    updateHistoryButtons();
+    setStatus("Undo");
+  }
+
+  function redo() {
+    if (!markdownInput || redoStack.length === 0) return;
+    undoStack.push(markdownInput.value);
+    markdownInput.value = redoStack.pop();
+    renderFromMarkdown();
+    updateHistoryButtons();
+    setStatus("Redo");
+  }
+
+  function updateHistoryButtons() {
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+    if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+  }
 
   marked.setOptions({ gfm: true, breaks: true });
 
@@ -148,6 +186,9 @@
   }
 
   const debouncedSave = debounce(saveToLocal, 800);
+  const debouncedHistoryPush = debounce(() => {
+    if (markdownInput) pushHistory(markdownInput.value);
+  }, 1000);
 
   function restoreFromLocal() {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -174,6 +215,7 @@
 
     updateCounts();
     debouncedSave(raw);
+    debouncedHistoryPush();
     setStatus("Preview updated");
     isSyncing = false;
   }
@@ -195,6 +237,7 @@
       markdownInput.scrollTop   = prevScroll;
       try { markdownInput.setSelectionRange(selStart, selEnd); } catch (_) {}
 
+      pushHistory(markdownInput.value);
       updateCounts();
       debouncedSave(markdown);
       setStatus("Markdown updated from preview");
@@ -228,6 +271,8 @@
     if (!markdownInput) return;
     const fn = FORMATS[format];
     if (!fn) return;
+
+    pushHistory(markdownInput.value);
 
     const start       = markdownInput.selectionStart;
     const end         = markdownInput.selectionEnd;
@@ -266,7 +311,19 @@
       return;
     }
 
-    if (key in shortcutMap) {
+    if (key === "z") {
+      e.preventDefault();
+      if (e.shiftKey) { redo(); } else { undo(); }
+      return;
+    }
+
+    if (key === "y" && !e.shiftKey) {
+      e.preventDefault();
+      redo();
+      return;
+    }
+
+    if (!e.shiftKey && key in shortcutMap) {
       e.preventDefault();
       applyFormat(shortcutMap[key]);
     }
@@ -277,6 +334,7 @@
   function loadFromFile(file) {
     const reader = new FileReader();
     reader.onload = (evt) => {
+      if (markdownInput) pushHistory(markdownInput.value);
       if (markdownInput) markdownInput.value = evt.target.result;
       renderFromMarkdown();
       setStatus(`Loaded: ${file.name}`);
@@ -347,15 +405,18 @@
   on(clearAllBtn, "click", () => {
     if (!markdownInput || !preview) return;
     if (!confirm("Clear everything? This cannot be undone.")) return;
+    pushHistory(markdownInput.value);
     markdownInput.value = "";
     preview.innerHTML   = "";
     saveToLocal("");
     updateCounts();
+    updateHistoryButtons();
     setStatus("Cleared");
   });
 
   on(resetSampleBtn, "click", () => {
     if (!markdownInput) return;
+    pushHistory(markdownInput.value);
     markdownInput.value = STARTER_MARKDOWN;
     renderFromMarkdown();
     setStatus("Sample content loaded");
@@ -367,6 +428,10 @@
     e.target.value = "";
   });
 
+  on(undoBtn, "click", undo);
+  on(redoBtn, "click", redo);
+
   /* ──────────── Init ──────────── */
   restoreFromLocal();
+  updateHistoryButtons();
 })();
