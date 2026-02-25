@@ -66,6 +66,9 @@ nav {
     background: #fff;
     font-weight: 600;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     transition: background 0.2s ease, transform 0.2s ease;
 }
 
