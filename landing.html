@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Two-Way Markdown Studio — Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Work+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v7.2.0/css/fontawesome.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v7.2.0/css/solid.css"
+    />
+    <style>
+      :root {
+        --bg: #f5f2ec;
+        --card: #fdfbf7;
+        --ink: #121212;
+        --muted: #6f6a63;
+        --accent: #b24d2d;
+        --stroke: #ddd4c9;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          "Work Sans",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        color: var(--ink);
+        background: radial-gradient(
+          circle at 90% 10%,
+          #fff7ef 0,
+          var(--bg) 50%
+        );
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .thumbnail {
+        width: min(1300px, 100%);
+        aspect-ratio: 16 / 9;
+        background: var(--card);
+        border: 1px solid var(--stroke);
+        border-radius: 4px;
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+        overflow: hidden;
+      }
+
+      .left {
+        padding: clamp(28px, 3vw, 46px);
+        border-right: 1px solid var(--stroke);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .headline {
+        margin: 16px 0 14px;
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: clamp(36px, 4.5vw, 68px);
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+      }
+
+      .sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: clamp(14px, 1.4vw, 20px);
+        line-height: 1.55;
+        max-width: 90%;
+      }
+
+      .feature-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 24px;
+      }
+
+      .chip {
+        border: 1px solid var(--stroke);
+        background: #fff;
+        border-radius: 2px;
+        padding: 7px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #2f2f2f;
+      }
+
+      .cta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+
+      .author {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .author b {
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .button {
+        background: var(--accent);
+        color: #fff;
+        border: 1px solid var(--accent);
+        padding: 9px 14px;
+        border-radius: 2px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      .right {
+        padding: clamp(18px, 2vw, 30px);
+        background: linear-gradient(180deg, #f9f4ed 0%, #fdfbf7 100%);
+      }
+
+      .mock {
+        height: 100%;
+        border: 1px solid var(--stroke);
+        background: #fff;
+        border-radius: 2px;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        overflow: hidden;
+      }
+
+      .mock-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--stroke);
+        background: #f9f4ed;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #605a53;
+      }
+
+      .mock-toolbar {
+        display: flex;
+        gap: 6px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--stroke);
+      }
+
+      .dot {
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--stroke);
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        color: #524d46;
+      }
+
+      .mock-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .pane {
+        padding: 14px;
+      }
+
+      .pane + .pane {
+        border-left: 1px solid var(--stroke);
+      }
+
+      .line {
+        height: 8px;
+        background: #eee6db;
+        margin-bottom: 10px;
+      }
+
+      .line.short {
+        width: 62%;
+      }
+
+      .line.mid {
+        width: 78%;
+      }
+
+      .preview-card {
+        border: 1px solid var(--stroke);
+        padding: 10px;
+        margin-top: 12px;
+      }
+
+      .preview-card .line {
+        background: #ece3d8;
+        margin-bottom: 7px;
+      }
+
+      @media (max-width: 1000px) {
+        .thumbnail {
+          grid-template-columns: 1fr;
+          aspect-ratio: auto;
+        }
+
+        .left {
+          border-right: 0;
+          border-bottom: 1px solid var(--stroke);
+        }
+
+        .sub {
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section
+      class="thumbnail"
+      aria-label="Portfolio thumbnail for Two-Way Markdown Studio"
+    >
+      <div class="left">
+        <div>
+          <span class="tag"
+            ><i class="fa-solid fa-bolt"></i> markdown editor showcase</span
+          >
+          <h1 class="headline">Two-Way Markdown Studio</h1>
+          <p class="sub">
+            A clean, professional markdown workspace with live two-way sync,
+            local autosave, keyboard shortcuts, and export-ready output.
+          </p>
+
+          <div class="feature-row">
+            <span class="chip"
+              ><i class="fa-solid fa-arrows-rotate"></i> Two-Way Sync</span
+            >
+            <span class="chip"
+              ><i class="fa-solid fa-table"></i> Tables & Images</span
+            >
+            <span class="chip"
+              ><i class="fa-solid fa-keyboard"></i> Shortcuts</span
+            >
+            <span class="chip"
+              ><i class="fa-solid fa-file-export"></i> Export MD/PDF</span
+            >
+            <span class="chip"
+              ><i class="fa-solid fa-floppy-disk"></i> Autosave</span
+            >
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <div class="author">Built by <b>Zenith Kandel</b></div>
+          <span class="button">Portfolio Project</span>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="mock">
+          <div class="mock-top">
+            <span>markdown</span>
+            <span>preview</span>
+          </div>
+
+          <div class="mock-toolbar" aria-hidden="true">
+            <span class="dot"><i class="fa-solid fa-rotate-left"></i></span>
+            <span class="dot"><i class="fa-solid fa-rotate-right"></i></span>
+            <span class="dot"><i class="fa-solid fa-bold"></i></span>
+            <span class="dot"><i class="fa-solid fa-italic"></i></span>
+            <span class="dot"><i class="fa-solid fa-link"></i></span>
+            <span class="dot"><i class="fa-solid fa-list-ul"></i></span>
+            <span class="dot"><i class="fa-solid fa-code"></i></span>
+          </div>
+
+          <div class="mock-grid" aria-hidden="true">
+            <div class="pane">
+              <div class="line short"></div>
+              <div class="line"></div>
+              <div class="line mid"></div>
+              <div class="line"></div>
+              <div class="line short"></div>
+            </div>
+
+            <div class="pane">
+              <div class="preview-card">
+                <div class="line short"></div>
+                <div class="line"></div>
+                <div class="line mid"></div>
+              </div>
+              <div class="preview-card">
+                <div class="line mid"></div>
+                <div class="line short"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
