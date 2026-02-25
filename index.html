@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two-Way Markdown Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f2ec;
+      --panel: #fdfbf7;
+      --ink: #121212;
+      --muted: #706b64;
+      --accent: #b24d2d;
+      --stroke: #e1d9cf;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Work Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--stroke);
+      background: #fffefb;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--ink);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 14px;
+      background: var(--panel);
+    }
+
+    nav {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      color: var(--ink);
+      background: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .pill.primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+    }
+
+    .pill:active { transform: translateY(1px); }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 24px 40px;
+      gap: 28px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      align-items: center;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(32px, 4vw, 52px);
+      line-height: 1.1;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .hero p {
+      margin: 6px 0 0;
+      max-width: 620px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .panes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 18px;
+    }
+
+    .pane {
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+      overflow: hidden;
+    }
+
+    .pane-header {
+      padding: 16px 16px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--stroke);
+      gap: 12px;
+    }
+
+    .pane-header .label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: #f1e8df;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--stroke);
+      background: #fffaf5;
+    }
+
+    .tool-btn {
+      border: 1px solid var(--stroke);
+      background: #fff;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--ink);
+      transition: background 0.15s ease, border 0.15s ease;
+    }
+
+    .tool-btn:hover { background: #f4ede6; }
+
+    .tool-btn.primary { background: var(--accent); color: #fff; border: none; }
+
+    .editor, .preview {
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      flex: 1;
+      padding: 16px;
+      font-family: 'Work Sans', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 15px;
+      line-height: 1.6;
+      background: transparent;
+      color: var(--ink);
+      overflow: auto;
+    }
+
+    .preview {
+      font-family: 'Work Sans', system-ui, sans-serif;
+      border-left: 1px dashed var(--stroke);
+    }
+
+    .preview h1, .preview h2, .preview h3, .preview h4 { font-family: 'Playfair Display', Georgia, serif; }
+    .preview table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+    .preview th, .preview td { border: 1px solid var(--stroke); padding: 8px 10px; text-align: left; }
+    .preview img { max-width: 100%; border-radius: 10px; }
+    .preview pre { background: #f0e9de; padding: 12px; border-radius: 10px; overflow: auto; }
+    .preview code { background: #f0e9de; padding: 2px 4px; border-radius: 4px; }
+    .preview blockquote { border-left: 3px solid var(--accent); padding-left: 10px; color: var(--muted); margin: 12px 0; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 0 0;
+    }
+
+    .ghost {
+      border: 1px solid var(--stroke);
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .status {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 0 2px 14px;
+    }
+
+    footer {
+      padding: 12px 24px 18px;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--stroke);
+      background: #fffefb;
+    }
+
+    @media (max-width: 900px) {
+      header { flex-wrap: wrap; gap: 10px; }
+      .preview { border-left: none; border-top: 1px dashed var(--stroke); }
+      .pane { min-height: 320px; }
+    }
+
+    @media print {
+      header, .hero, .toolbar, .actions, footer { display: none !important; }
+      body { background: #fff; }
+      .pane { box-shadow: none; border: none; }
+      .preview { border: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-mark">MD</div>
+      <div>Two-Way Editor</div>
+    </div>
+    <nav>
+      <span>Keyboard: Ctrl/Cmd + B, I, U</span>
+      <button class="pill" id="loadFileBtn">Load</button>
+      <button class="pill" id="exportMdBtn">Export .md</button>
+      <button class="pill primary" id="exportPdfBtn">Export PDF</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1>All your markdown in one inbox.</h1>
+        <p>Edit markdown and the rendered output side by side. Change either side and keep them perfectly in sync. Flat, simple, distraction-free.</p>
+      </div>
+      <div class="hint">Supports tables, images, lists, code, quotes, file import/export, PDF printing, and autosave to local storage.</div>
+    </section>
+
+    <section class="panes">
+      <article class="pane">
+        <div class="pane-header">
+          <span class="label">Markdown Source</span>
+          <span class="badge">Live Edit</span>
+        </div>
+        <div class="toolbar">
+          <button class="tool-btn" data-format="bold">Bold</button>
+          <button class="tool-btn" data-format="italic">Italic</button>
+          <button class="tool-btn" data-format="underline">Underline</button>
+          <button class="tool-btn" data-format="link">Link</button>
+          <button class="tool-btn" data-format="list">List</button>
+          <button class="tool-btn" data-format="quote">Quote</button>
+          <button class="tool-btn" data-format="code">Code</button>
+          <button class="tool-btn" data-format="table">Table</button>
+          <button class="tool-btn" data-format="image">Image</button>
+        </div>
+        <textarea id="markdownInput" class="editor" spellcheck="false" aria-label="Markdown input"></textarea>
+      </article>
+
+      <article class="pane">
+        <div class="pane-header">
+          <span class="label">Rendered Output</span>
+          <span class="badge">Two-Way</span>
+        </div>
+        <div class="toolbar">
+          <span class="hint">Click and edit this preview. Changes mirror back to markdown.</span>
+        </div>
+        <div id="preview" class="preview" contenteditable="true" aria-label="Preview output"></div>
+      </article>
+    </section>
+
+    <section class="actions">
+      <input type="file" id="filePicker" accept=".md,.markdown,.txt" style="display:none" />
+      <button class="ghost" id="resetSample">Reset to sample</button>
+      <button class="ghost" id="clearAll">Clear</button>
+      <button class="ghost" id="saveNow">Save now</button>
+      <span class="status" id="status">Idle</span>
+    </section>
+  </main>
+
+  <footer>
+    Two-way sync: Markdown edits update the preview; preview edits convert back to markdown via Turndown. Autosaves live to your browser. Use print or the PDF export button for a clean PDF of the preview.
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/turndown@7.1.2/dist/turndown.min.js"></script>
+  <script>
+    const markdownInput = document.getElementById('markdownInput');
+    const preview = document.getElementById('preview');
+    const statusEl = document.getElementById('status');
+    const filePicker = document.getElementById('filePicker');
+    const loadFileBtn = document.getElementById('loadFileBtn');
+    const exportMdBtn = document.getElementById('exportMdBtn');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    const resetSampleBtn = document.getElementById('resetSample');
+    const clearAllBtn = document.getElementById('clearAll');
+    const saveNowBtn = document.getElementById('saveNow');
+    const toolbar = document.querySelector('.toolbar');
+
+    const STORAGE_KEY = 'two-way-markdown';
+    const turndownService = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+    let isSyncing = false;
+
+    marked.setOptions({ gfm: true, breaks: true });
+
+    const starterMarkdown = `# All your markdown in one place
+
+Welcome to the two-way markdown studio. Edit either side and everything stays synced.
+
+## Features
+- Two-way editing: markdown \u2194 preview
+- Tables, images, lists, code blocks
+- Local storage autosave
+- Keyboard shortcuts: Ctrl/Cmd + B, I, U
+- File import/export and PDF
+
+| Service | Status | Notes |
+| --- | --- | --- |
+| Stripe | Paid | Invoice #4521 paid — $2,400.00 |
+| GitHub | PR merged | Added webhook retry logic #287 |
+| Vercel | Deploy | Production deployment successful |
+
+> Tip: Edit this preview directly to push changes back to markdown.
+
+![Example illustration](https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80)
+
+
+aaa bbb ccc
+
+### Code
+\`\`\`
+console.log('Hello, markdown');
+\`\`\`
+`;
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function saveToLocal(markdown) {
+      localStorage.setItem(STORAGE_KEY, markdown);
+      setStatus('Saved locally');
+    }
+
+    function renderFromMarkdown() {
+      if (isSyncing) return;
+      isSyncing = true;
+      const raw = markdownInput.value;
+      const html = DOMPurify.sanitize(marked.parse(raw));
+      preview.innerHTML = html;
+      saveToLocal(raw);
+      setStatus('Updated preview from markdown');
+      isSyncing = false;
+    }
+
+    function renderFromPreview() {
+      if (isSyncing) return;
+      isSyncing = true;
+      const markdown = turndownService.turndown(preview.innerHTML);
+      markdownInput.value = markdown;
+      saveToLocal(markdown);
+      setStatus('Updated markdown from preview');
+      isSyncing = false;
+    }
+
+    function applyFormat(format) {
+      const start = markdownInput.selectionStart;
+      const end = markdownInput.selectionEnd;
+      const value = markdownInput.value;
+      const selected = value.slice(start, end) || 'text';
+      let replacement = selected;
+
+      switch (format) {
+        case 'bold':
+          replacement = `**${selected}**`;
+          break;
+        case 'italic':
+          replacement = `*${selected}*`;
+          break;
+        case 'underline':
+          replacement = `<u>${selected}</u>`;
+          break;
+        case 'link':
+          replacement = `[${selected}](https://example.com)`;
+          break;
+        case 'list':
+          replacement = `- ${selected.split('\n').join('\n- ')}`;
+          break;
+        case 'quote':
+          replacement = `> ${selected.split('\n').join('\n> ')}`;
+          break;
+        case 'code':
+          replacement = `\`${selected}\``;
+          break;
+        case 'table':
+          replacement = `| Column A | Column B |
+| --- | --- |
+| Value 1 | Value 2 |
+| Value 3 | Value 4 |`;
+          break;
+        case 'image':
+          replacement = `![Alt text](https://placekitten.com/800/400)`;
+          break;
+        default:
+          break;
+      }
+
+      const newValue = value.slice(0, start) + replacement + value.slice(end);
+      markdownInput.value = newValue;
+      const cursor = start + replacement.length;
+      markdownInput.setSelectionRange(cursor, cursor);
+      markdownInput.focus();
+      renderFromMarkdown();
+    }
+
+    function handleShortcut(e) {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const meta = isMac ? e.metaKey : e.ctrlKey;
+      if (!meta) return;
+      if (['b', 'i', 'u'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        applyFormat({ b: 'bold', i: 'italic', u: 'underline' }[e.key.toLowerCase()]);
+      }
+    }
+
+    function loadFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        markdownInput.value = evt.target.result;
+        renderFromMarkdown();
+      };
+      reader.readAsText(file);
+    }
+
+    function exportMarkdown() {
+      const blob = new Blob([markdownInput.value], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'document.md';
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus('Exported markdown');
+    }
+
+    function exportPdf() {
+      const win = window.open('', '_blank');
+      const styles = `<style>body{font-family:'Work Sans',sans-serif;margin:32px;background:#fff;color:#111;} h1,h2,h3{font-family:'Playfair Display',serif;} table{border-collapse:collapse;width:100%;} th,td{border:1px solid #ddd;padding:8px;} img{max-width:100%;border-radius:8px;} pre{background:#f0e9de;padding:12px;border-radius:10px;}</style>`;
+      win.document.write(`<html><head><title>Preview PDF</title>${styles}</head><body>${preview.innerHTML}</body></html>`);
+      win.document.close();
+      win.focus();
+      win.print();
+      win.close();
+      setStatus('Opened print dialog');
+    }
+
+    function restoreFromLocal() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      markdownInput.value = saved || starterMarkdown;
+      renderFromMarkdown();
+    }
+
+    // Event bindings
+    markdownInput.addEventListener('input', renderFromMarkdown);
+    markdownInput.addEventListener('keydown', handleShortcut);
+    preview.addEventListener('input', () => {
+      // Sanitize live edits to avoid unsafe tags
+      preview.innerHTML = DOMPurify.sanitize(preview.innerHTML, { ALLOWED_ATTR: ['href', 'src', 'alt', 'title'] });
+      renderFromPreview();
+    });
+
+    loadFileBtn.addEventListener('click', () => filePicker.click());
+    filePicker.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        loadFromFile(e.target.files[0]);
+      }
+      e.target.value = '';
+    });
+
+    exportMdBtn.addEventListener('click', exportMarkdown);
+    exportPdfBtn.addEventListener('click', exportPdf);
+
+    resetSampleBtn.addEventListener('click', () => {
+      markdownInput.value = starterMarkdown;
+      renderFromMarkdown();
+    });
+
+    clearAllBtn.addEventListener('click', () => {
+      markdownInput.value = '';
+      preview.innerHTML = '';
+      saveToLocal('');
+      setStatus('Cleared');
+    });
+
+    saveNowBtn.addEventListener('click', () => saveToLocal(markdownInput.value));
+
+    document.querySelectorAll('.tool-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyFormat(btn.dataset.format));
+    });
+
+    // Initialize
+    restoreFromLocal();
+  </script>
+</body>
+</html>
