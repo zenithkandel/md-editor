@@ -22,42 +22,6 @@ body {
     flex-direction: column;
 }
 
-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--stroke);
-    background: #fffefb;
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-}
-
-.brand-mark {
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--ink);
-    display: grid;
-    place-items: center;
-    font-weight: 700;
-    font-size: 14px;
-    background: var(--panel);
-}
-
-nav {
-    display: flex;
-    gap: 18px;
-    align-items: center;
-    color: var(--muted);
-    font-size: 14px;
-}
-
 .pill {
     padding: 8px 14px;
     border-radius: 999px;
@@ -86,30 +50,8 @@ main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 32px 24px 40px;
-    gap: 28px;
-}
-
-.hero {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    padding: 16px 18px 28px;
     gap: 16px;
-    align-items: center;
-}
-
-.hero h1 {
-    font-family: "Playfair Display", Georgia, serif;
-    font-size: clamp(32px, 4vw, 52px);
-    line-height: 1.1;
-    margin: 0;
-    letter-spacing: -0.5px;
-}
-
-.hero p {
-    margin: 6px 0 0;
-    max-width: 620px;
-    color: var(--muted);
-    line-height: 1.5;
 }
 
 .panes {
@@ -294,19 +236,10 @@ main {
 }
 
 footer {
-    padding: 12px 24px 18px;
-    color: var(--muted);
-    font-size: 13px;
-    border-top: 1px solid var(--stroke);
-    background: #fffefb;
+    display: none;
 }
 
 @media (max-width: 900px) {
-    header {
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
     .preview {
         border-left: none;
         border-top: 1px dashed var(--stroke);
@@ -318,15 +251,6 @@ footer {
 }
 
 @media print {
-
-    header,
-    .hero,
-    .toolbar,
-    .actions,
-    footer {
-        display: none !important;
-    }
-
     body {
         background: #fff;
     }
@@ -339,4 +263,12 @@ footer {
     .preview {
         border: none;
     }
+}
+
+.portfolio-pill {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    text-decoration: none;
 }
