@@ -39,44 +39,64 @@
       <section class="panes">
         <article class="pane">
           <div class="pane-header">
-            <span class="label">Markdown Source</span>
-            <span class="badge">Live Edit</span>
+            <span class="label">Markdown</span>
+            <div class="counts">
+              <span id="wordCount">0 words</span>
+              <span class="sep">·</span>
+              <span id="charCount">0 chars</span>
+            </div>
           </div>
           <div class="toolbar">
-            <button class="tool-btn" data-format="bold">Bold</button>
-            <button class="tool-btn" data-format="italic">Italic</button>
-            <button class="tool-btn" data-format="underline">Underline</button>
-            <button class="tool-btn" data-format="link">Link</button>
-            <button class="tool-btn" data-format="list">List</button>
-            <button class="tool-btn" data-format="quote">Quote</button>
-            <button class="tool-btn" data-format="code">Code</button>
-            <button class="tool-btn" data-format="table">Table</button>
-            <button class="tool-btn" data-format="image">Image</button>
+            <div class="tool-group">
+              <button class="tool-btn" data-format="h1" title="Heading 1">H1</button>
+              <button class="tool-btn" data-format="h2" title="Heading 2">H2</button>
+              <button class="tool-btn" data-format="h3" title="Heading 3">H3</button>
+            </div>
+            <div class="tool-sep"></div>
+            <div class="tool-group">
+              <button class="tool-btn" data-format="bold"      title="Bold (Ctrl+B)"><b>B</b></button>
+              <button class="tool-btn" data-format="italic"    title="Italic (Ctrl+I)"><i>I</i></button>
+              <button class="tool-btn" data-format="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+              <button class="tool-btn" data-format="strike"    title="Strikethrough"><s>S</s></button>
+            </div>
+            <div class="tool-sep"></div>
+            <div class="tool-group">
+              <button class="tool-btn" data-format="link"      title="Link (Ctrl+K)">Link</button>
+              <button class="tool-btn" data-format="image"     title="Image">Img</button>
+              <button class="tool-btn" data-format="code"      title="Inline code (Ctrl+`)">Code</button>
+              <button class="tool-btn" data-format="codeblock" title="Code block">```</button>
+            </div>
+            <div class="tool-sep"></div>
+            <div class="tool-group">
+              <button class="tool-btn" data-format="list"  title="Bullet list">• List</button>
+              <button class="tool-btn" data-format="olist" title="Numbered list">1. List</button>
+              <button class="tool-btn" data-format="quote" title="Blockquote">Quote</button>
+              <button class="tool-btn" data-format="table" title="Table">Table</button>
+              <button class="tool-btn" data-format="hr"    title="Horizontal rule">HR</button>
+            </div>
           </div>
           <textarea
             id="markdownInput"
             class="editor"
             spellcheck="false"
             aria-label="Markdown input"
+            placeholder="Start writing markdown…"
           ></textarea>
         </article>
 
         <article class="pane">
           <div class="pane-header">
-            <span class="label">Rendered Output</span>
+            <span class="label">Preview</span>
             <span class="badge">Two-Way</span>
           </div>
-          <div class="toolbar">
-            <span class="hint"
-              >Click and edit this preview. Changes mirror back to
-              markdown.</span
-            >
+          <div class="toolbar preview-toolbar">
+            <span class="hint">Editable — changes sync back to markdown</span>
           </div>
           <div
             id="preview"
             class="preview"
             contenteditable="true"
-            aria-label="Preview output"
+            aria-label="Rendered preview — editable"
           ></div>
         </article>
       </section>
@@ -88,10 +108,13 @@
           accept=".md,.markdown,.txt"
           style="display: none"
         />
-        <button class="ghost" id="resetSample">Reset to sample</button>
+        <button class="ghost" id="loadFileBtn">Load .md</button>
+        <button class="ghost" id="exportMdBtn">Export .md</button>
+        <button class="ghost" id="exportPdfBtn">Export PDF</button>
+        <button class="ghost" id="resetSample">Sample</button>
         <button class="ghost" id="clearAll">Clear</button>
-        <button class="ghost" id="saveNow">Save now</button>
-        <span class="status" id="status">Idle</span>
+        <button class="ghost" id="saveNow">Save</button>
+        <span class="status" id="status">Ready</span>
       </section>
     </main>
   </body>
