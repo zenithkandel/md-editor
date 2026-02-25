@@ -25,340 +25,340 @@
  */
 
 (() => {
-  /* ──────────── DOM references ──────────── */
-  const markdownInput  = document.getElementById("markdownInput");
-  const preview        = document.getElementById("preview");
-  const statusEl       = document.getElementById("status");
-  const wordCountEl    = document.getElementById("wordCount");
-  const charCountEl    = document.getElementById("charCount");
-  const filePicker     = document.getElementById("filePicker");
-  const loadFileBtn    = document.getElementById("loadFileBtn");
-  const exportMdBtn    = document.getElementById("exportMdBtn");
-  const exportPdfBtn   = document.getElementById("exportPdfBtn");
-  const resetSampleBtn = document.getElementById("resetSample");
-  const clearAllBtn    = document.getElementById("clearAll");
-  const saveNowBtn     = document.getElementById("saveNow");
-  const undoBtn        = document.getElementById("undoBtn");
-  const redoBtn        = document.getElementById("redoBtn");
-  const formatButtons  = document.querySelectorAll(".tool-btn");
+    /* ──────────── DOM references ──────────── */
+    const markdownInput = document.getElementById("markdownInput");
+    const preview = document.getElementById("preview");
+    const statusEl = document.getElementById("status");
+    const wordCountEl = document.getElementById("wordCount");
+    const charCountEl = document.getElementById("charCount");
+    const filePicker = document.getElementById("filePicker");
+    const loadFileBtn = document.getElementById("loadFileBtn");
+    const exportMdBtn = document.getElementById("exportMdBtn");
+    const exportPdfBtn = document.getElementById("exportPdfBtn");
+    const resetSampleBtn = document.getElementById("resetSample");
+    const clearAllBtn = document.getElementById("clearAll");
+    const saveNowBtn = document.getElementById("saveNow");
+    const undoBtn = document.getElementById("undoBtn");
+    const redoBtn = document.getElementById("redoBtn");
+    const formatButtons = document.querySelectorAll(".tool-btn");
 
-  /* ──────────── Constants + state ──────────── */
-  const STORAGE_KEY = "two-way-markdown";
+    /* ──────────── Constants + state ──────────── */
+    const STORAGE_KEY = "two-way-markdown";
 
-  const turndownService = new TurndownService({
-    headingStyle: "atx",
-    codeBlockStyle: "fenced",
-  });
+    const turndownService = new TurndownService({
+        headingStyle: "atx",
+        codeBlockStyle: "fenced",
+    });
 
-  const SANITIZE_OPTS = {
-    ALLOWED_TAGS: [
-      "h1","h2","h3","h4","h5","h6",
-      "p","br","strong","em","u","s","del","ins","mark","code","pre",
-      "ul","ol","li","blockquote","hr","a","img",
-      "table","thead","tbody","tr","th","td",
-      "span","div","figure","figcaption",
-    ],
-    ALLOWED_ATTR: ["href","src","alt","title","class","id","target","rel"],
-  };
-
-  let isSyncing = false;
-
-  /* ──────────── Undo / Redo history ──────────── */
-  const undoStack = [];
-  const redoStack = [];
-  const MAX_HISTORY = 100;
-
-  function pushHistory(value) {
-    if (undoStack.length > 0 && undoStack[undoStack.length - 1] === value) return;
-    undoStack.push(value);
-    if (undoStack.length > MAX_HISTORY) undoStack.shift();
-    redoStack.length = 0;
-    updateHistoryButtons();
-  }
-
-  function undo() {
-    if (!markdownInput || undoStack.length === 0) return;
-    redoStack.push(markdownInput.value);
-    markdownInput.value = undoStack.pop();
-    renderFromMarkdown();
-    updateHistoryButtons();
-    setStatus("Undo");
-  }
-
-  function redo() {
-    if (!markdownInput || redoStack.length === 0) return;
-    undoStack.push(markdownInput.value);
-    markdownInput.value = redoStack.pop();
-    renderFromMarkdown();
-    updateHistoryButtons();
-    setStatus("Redo");
-  }
-
-  function updateHistoryButtons() {
-    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
-    if (redoBtn) redoBtn.disabled = redoStack.length === 0;
-  }
-
-  marked.setOptions({ gfm: true, breaks: true });
-
-  /* ──────────── Starter content ──────────── */
-  const STARTER_MARKDOWN = [
-    "# All your markdown in one place",
-    "",
-    "Welcome to the **Two-Way Markdown Studio**. Edit either side — both stay in sync.",
-    "",
-    "## Features",
-    "- Two-way editing: markdown \u2194 preview",
-    "- Tables, images, lists, code blocks",
-    "- Local storage autosave",
-    "- Keyboard shortcuts: `Ctrl/Cmd + B`, `I`, `U`, `K`, `` ` ``",
-    "- File import/export and PDF",
-    "- Live word & character count",
-    "",
-    "## Quick Reference",
-    "",
-    "| Syntax | Output |",
-    "| --- | --- |",
-    "| `**bold**` | **bold** |",
-    "| `*italic*` | *italic* |",
-    "| `~~strike~~` | ~~strike~~ |",
-    "| `` `code` `` | `code` |",
-    "",
-    "> **Tip:** Click directly inside the preview on the right and edit — changes sync back to markdown.",
-    "",
-    "![Illustration](https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80)",
-    "",
-    "### Code block",
-    "```js",
-    "const editor = document.getElementById('markdownInput');",
-    "editor.addEventListener('input', render);",
-    "```",
-    "",
-    "---",
-    "",
-    "_Made with \u2665 by [Zenith Kandel](https://zenithkandel.com.np)_",
-  ].join("\n");
-
-  /* ──────────── Utilities ──────────── */
-
-  /** Safe addEventListener — no-ops if el is null */
-  function on(el, event, handler) {
-    if (el) el.addEventListener(event, handler);
-  }
-
-  /** Debounce: delays fn by `wait` ms, resets on each call */
-  function debounce(fn, wait) {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), wait);
-    };
-  }
-
-  /** Display a transient status message, auto-clears after 3 s */
-  function setStatus(text) {
-    if (!statusEl) return;
-    statusEl.textContent = text;
-    clearTimeout(statusEl._timer);
-    statusEl._timer = setTimeout(() => {
-      statusEl.textContent = "Ready";
-    }, 3000);
-  }
-
-  /** Update live word and character counts */
-  function updateCounts() {
-    const text  = markdownInput ? markdownInput.value : "";
-    const words = text.trim().length === 0 ? 0 : text.trim().split(/\s+/).length;
-    const chars = text.length;
-    if (wordCountEl) wordCountEl.textContent = `${words} word${words !== 1 ? "s" : ""}`;
-    if (charCountEl) charCountEl.textContent = `${chars} char${chars !== 1 ? "s" : ""}`;
-  }
-
-  /* ──────────── Persistence ──────────── */
-
-  function saveToLocal(markdown) {
-    try {
-      localStorage.setItem(STORAGE_KEY, markdown);
-      setStatus("Saved");
-    } catch (_) {
-      setStatus("Save failed — storage full");
-    }
-  }
-
-  const debouncedSave = debounce(saveToLocal, 800);
-  const debouncedHistoryPush = debounce(() => {
-    if (markdownInput) pushHistory(markdownInput.value);
-  }, 1000);
-
-  function restoreFromLocal() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (markdownInput) {
-      markdownInput.value = saved !== null ? saved : STARTER_MARKDOWN;
-    }
-    renderFromMarkdown();
-  }
-
-  /* ──────────── Render: markdown → preview ──────────── */
-
-  function renderFromMarkdown() {
-    if (isSyncing) return;
-    isSyncing = true;
-
-    const raw  = markdownInput ? markdownInput.value : "";
-    const html = DOMPurify.sanitize(marked.parse(raw), SANITIZE_OPTS);
-
-    if (preview) {
-      const prevScroll  = preview.scrollTop;
-      preview.innerHTML = html;
-      preview.scrollTop = prevScroll;
-    }
-
-    updateCounts();
-    debouncedSave(raw);
-    debouncedHistoryPush();
-    setStatus("Preview updated");
-    isSyncing = false;
-  }
-
-  /* ──────────── Render: preview → markdown ──────────── */
-
-  function renderFromPreview() {
-    if (isSyncing) return;
-    isSyncing = true;
-
-    if (preview && markdownInput) {
-      const sanitized  = DOMPurify.sanitize(preview.innerHTML, SANITIZE_OPTS);
-      const markdown   = turndownService.turndown(sanitized);
-      const prevScroll = markdownInput.scrollTop;
-      const selStart   = markdownInput.selectionStart;
-      const selEnd     = markdownInput.selectionEnd;
-
-      markdownInput.value       = markdown;
-      markdownInput.scrollTop   = prevScroll;
-      try { markdownInput.setSelectionRange(selStart, selEnd); } catch (_) {}
-
-      pushHistory(markdownInput.value);
-      updateCounts();
-      debouncedSave(markdown);
-      setStatus("Markdown updated from preview");
-    }
-
-    isSyncing = false;
-  }
-
-  /* ──────────── Formatting helpers ──────────── */
-
-  const FORMATS = {
-    bold:      (s) => `**${s}**`,
-    italic:    (s) => `*${s}*`,
-    underline: (s) => `<u>${s}</u>`,
-    strike:    (s) => `~~${s}~~`,
-    link:      (s) => `[${s}](https://example.com)`,
-    code:      (s) => `\`${s}\``,
-    codeblock: (s) => "```\n" + s + "\n```",
-    h1:        (s) => `# ${s}`,
-    h2:        (s) => `## ${s}`,
-    h3:        (s) => `### ${s}`,
-    list:      (s) => s.split("\n").map((l) => `- ${l}`).join("\n"),
-    olist:     (s) => s.split("\n").map((l, i) => `${i + 1}. ${l}`).join("\n"),
-    quote:     (s) => s.split("\n").map((l) => `> ${l}`).join("\n"),
-    hr:        ()  => "\n\n---\n\n",
-    image:     (s) => `![${s}](https://images.unsplash.com/photo-1557683316-973673baf926?w=800)`,
-    table:     ()  => "| Column A | Column B | Column C |\n| --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 |\n| Cell 4 | Cell 5 | Cell 6 |",
-  };
-
-  function applyFormat(format) {
-    if (!markdownInput) return;
-    const fn = FORMATS[format];
-    if (!fn) return;
-
-    pushHistory(markdownInput.value);
-
-    const start       = markdownInput.selectionStart;
-    const end         = markdownInput.selectionEnd;
-    const value       = markdownInput.value;
-    const selected    = value.slice(start, end) || "text";
-    const replacement = fn(selected);
-    const newValue    = value.slice(0, start) + replacement + value.slice(end);
-
-    markdownInput.value = newValue;
-    const cursor = start + replacement.length;
-    try { markdownInput.setSelectionRange(cursor, cursor); } catch (_) {}
-    markdownInput.focus();
-    renderFromMarkdown();
-  }
-
-  /* ──────────── Keyboard shortcuts ──────────── */
-
-  function handleShortcut(e) {
-    const isMac = /mac/i.test(navigator.platform);
-    const meta  = isMac ? e.metaKey : e.ctrlKey;
-    if (!meta) return;
-
-    const shortcutMap = {
-      b: "bold",
-      i: "italic",
-      u: "underline",
-      k: "link",
-      "`": "code",
+    const SANITIZE_OPTS = {
+        ALLOWED_TAGS: [
+            "h1", "h2", "h3", "h4", "h5", "h6",
+            "p", "br", "strong", "em", "u", "s", "del", "ins", "mark", "code", "pre",
+            "ul", "ol", "li", "blockquote", "hr", "a", "img",
+            "table", "thead", "tbody", "tr", "th", "td",
+            "span", "div", "figure", "figcaption",
+        ],
+        ALLOWED_ATTR: ["href", "src", "alt", "title", "class", "id", "target", "rel"],
     };
 
-    const key = e.key.toLowerCase();
+    let isSyncing = false;
 
-    if (key === "s") {
-      e.preventDefault();
-      saveToLocal(markdownInput ? markdownInput.value : "");
-      return;
+    /* ──────────── Undo / Redo history ──────────── */
+    const undoStack = [];
+    const redoStack = [];
+    const MAX_HISTORY = 100;
+
+    function pushHistory(value) {
+        if (undoStack.length > 0 && undoStack[undoStack.length - 1] === value) return;
+        undoStack.push(value);
+        if (undoStack.length > MAX_HISTORY) undoStack.shift();
+        redoStack.length = 0;
+        updateHistoryButtons();
     }
 
-    if (key === "z") {
-      e.preventDefault();
-      if (e.shiftKey) { redo(); } else { undo(); }
-      return;
+    function undo() {
+        if (!markdownInput || undoStack.length === 0) return;
+        redoStack.push(markdownInput.value);
+        markdownInput.value = undoStack.pop();
+        renderFromMarkdown();
+        updateHistoryButtons();
+        setStatus("Undo");
     }
 
-    if (key === "y" && !e.shiftKey) {
-      e.preventDefault();
-      redo();
-      return;
+    function redo() {
+        if (!markdownInput || redoStack.length === 0) return;
+        undoStack.push(markdownInput.value);
+        markdownInput.value = redoStack.pop();
+        renderFromMarkdown();
+        updateHistoryButtons();
+        setStatus("Redo");
     }
 
-    if (!e.shiftKey && key in shortcutMap) {
-      e.preventDefault();
-      applyFormat(shortcutMap[key]);
+    function updateHistoryButtons() {
+        if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+        if (redoBtn) redoBtn.disabled = redoStack.length === 0;
     }
-  }
 
-  /* ──────────── File I/O ──────────── */
+    marked.setOptions({ gfm: true, breaks: true });
 
-  function loadFromFile(file) {
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      if (markdownInput) pushHistory(markdownInput.value);
-      if (markdownInput) markdownInput.value = evt.target.result;
-      renderFromMarkdown();
-      setStatus(`Loaded: ${file.name}`);
+    /* ──────────── Starter content ──────────── */
+    const STARTER_MARKDOWN = [
+        "# All your markdown in one place",
+        "",
+        "Welcome to the **Two-Way Markdown Studio**. Edit either side — both stay in sync.",
+        "",
+        "## Features",
+        "- Two-way editing: markdown \u2194 preview",
+        "- Tables, images, lists, code blocks",
+        "- Local storage autosave",
+        "- Keyboard shortcuts: `Ctrl/Cmd + B`, `I`, `U`, `K`, `` ` ``",
+        "- File import/export and PDF",
+        "- Live word & character count",
+        "",
+        "## Quick Reference",
+        "",
+        "| Syntax | Output |",
+        "| --- | --- |",
+        "| `**bold**` | **bold** |",
+        "| `*italic*` | *italic* |",
+        "| `~~strike~~` | ~~strike~~ |",
+        "| `` `code` `` | `code` |",
+        "",
+        "> **Tip:** Click directly inside the preview on the right and edit — changes sync back to markdown.",
+        "",
+        "![Illustration](https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80)",
+        "",
+        "### Code block",
+        "```js",
+        "const editor = document.getElementById('markdownInput');",
+        "editor.addEventListener('input', render);",
+        "```",
+        "",
+        "---",
+        "",
+        "_Made with \u2665 by [Zenith Kandel](https://zenithkandel.com.np)_",
+    ].join("\n");
+
+    /* ──────────── Utilities ──────────── */
+
+    /** Safe addEventListener — no-ops if el is null */
+    function on(el, event, handler) {
+        if (el) el.addEventListener(event, handler);
+    }
+
+    /** Debounce: delays fn by `wait` ms, resets on each call */
+    function debounce(fn, wait) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), wait);
+        };
+    }
+
+    /** Display a transient status message, auto-clears after 3 s */
+    function setStatus(text) {
+        if (!statusEl) return;
+        statusEl.textContent = text;
+        clearTimeout(statusEl._timer);
+        statusEl._timer = setTimeout(() => {
+            statusEl.textContent = "Ready";
+        }, 3000);
+    }
+
+    /** Update live word and character counts */
+    function updateCounts() {
+        const text = markdownInput ? markdownInput.value : "";
+        const words = text.trim().length === 0 ? 0 : text.trim().split(/\s+/).length;
+        const chars = text.length;
+        if (wordCountEl) wordCountEl.textContent = `${words} word${words !== 1 ? "s" : ""}`;
+        if (charCountEl) charCountEl.textContent = `${chars} char${chars !== 1 ? "s" : ""}`;
+    }
+
+    /* ──────────── Persistence ──────────── */
+
+    function saveToLocal(markdown) {
+        try {
+            localStorage.setItem(STORAGE_KEY, markdown);
+            setStatus("Saved");
+        } catch (_) {
+            setStatus("Save failed — storage full");
+        }
+    }
+
+    const debouncedSave = debounce(saveToLocal, 800);
+    const debouncedHistoryPush = debounce(() => {
+        if (markdownInput) pushHistory(markdownInput.value);
+    }, 1000);
+
+    function restoreFromLocal() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (markdownInput) {
+            markdownInput.value = saved !== null ? saved : STARTER_MARKDOWN;
+        }
+        renderFromMarkdown();
+    }
+
+    /* ──────────── Render: markdown → preview ──────────── */
+
+    function renderFromMarkdown() {
+        if (isSyncing) return;
+        isSyncing = true;
+
+        const raw = markdownInput ? markdownInput.value : "";
+        const html = DOMPurify.sanitize(marked.parse(raw), SANITIZE_OPTS);
+
+        if (preview) {
+            const prevScroll = preview.scrollTop;
+            preview.innerHTML = html;
+            preview.scrollTop = prevScroll;
+        }
+
+        updateCounts();
+        debouncedSave(raw);
+        debouncedHistoryPush();
+        setStatus("Preview updated");
+        isSyncing = false;
+    }
+
+    /* ──────────── Render: preview → markdown ──────────── */
+
+    function renderFromPreview() {
+        if (isSyncing) return;
+        isSyncing = true;
+
+        if (preview && markdownInput) {
+            const sanitized = DOMPurify.sanitize(preview.innerHTML, SANITIZE_OPTS);
+            const markdown = turndownService.turndown(sanitized);
+            const prevScroll = markdownInput.scrollTop;
+            const selStart = markdownInput.selectionStart;
+            const selEnd = markdownInput.selectionEnd;
+
+            markdownInput.value = markdown;
+            markdownInput.scrollTop = prevScroll;
+            try { markdownInput.setSelectionRange(selStart, selEnd); } catch (_) { }
+
+            pushHistory(markdownInput.value);
+            updateCounts();
+            debouncedSave(markdown);
+            setStatus("Markdown updated from preview");
+        }
+
+        isSyncing = false;
+    }
+
+    /* ──────────── Formatting helpers ──────────── */
+
+    const FORMATS = {
+        bold: (s) => `**${s}**`,
+        italic: (s) => `*${s}*`,
+        underline: (s) => `<u>${s}</u>`,
+        strike: (s) => `~~${s}~~`,
+        link: (s) => `[${s}](https://example.com)`,
+        code: (s) => `\`${s}\``,
+        codeblock: (s) => "```\n" + s + "\n```",
+        h1: (s) => `# ${s}`,
+        h2: (s) => `## ${s}`,
+        h3: (s) => `### ${s}`,
+        list: (s) => s.split("\n").map((l) => `- ${l}`).join("\n"),
+        olist: (s) => s.split("\n").map((l, i) => `${i + 1}. ${l}`).join("\n"),
+        quote: (s) => s.split("\n").map((l) => `> ${l}`).join("\n"),
+        hr: () => "\n\n---\n\n",
+        image: (s) => `![${s}](https://images.unsplash.com/photo-1557683316-973673baf926?w=800)`,
+        table: () => "| Column A | Column B | Column C |\n| --- | --- | --- |\n| Cell 1 | Cell 2 | Cell 3 |\n| Cell 4 | Cell 5 | Cell 6 |",
     };
-    reader.onerror = () => setStatus("Error reading file");
-    reader.readAsText(file);
-  }
 
-  function exportMarkdown() {
-    if (!markdownInput) return;
-    const blob   = new Blob([markdownInput.value], { type: "text/markdown;charset=utf-8" });
-    const url    = URL.createObjectURL(blob);
-    const anchor = Object.assign(document.createElement("a"), { href: url, download: "document.md" });
-    anchor.click();
-    URL.revokeObjectURL(url);
-    setStatus("Exported document.md");
-  }
+    function applyFormat(format) {
+        if (!markdownInput) return;
+        const fn = FORMATS[format];
+        if (!fn) return;
 
-  function exportPdf() {
-    if (!preview) return;
-    const win = window.open("", "_blank");
-    if (!win) { setStatus("Popup blocked — allow popups for PDF export"); return; }
+        pushHistory(markdownInput.value);
 
-    const styles = `
+        const start = markdownInput.selectionStart;
+        const end = markdownInput.selectionEnd;
+        const value = markdownInput.value;
+        const selected = value.slice(start, end) || "text";
+        const replacement = fn(selected);
+        const newValue = value.slice(0, start) + replacement + value.slice(end);
+
+        markdownInput.value = newValue;
+        const cursor = start + replacement.length;
+        try { markdownInput.setSelectionRange(cursor, cursor); } catch (_) { }
+        markdownInput.focus();
+        renderFromMarkdown();
+    }
+
+    /* ──────────── Keyboard shortcuts ──────────── */
+
+    function handleShortcut(e) {
+        const isMac = /mac/i.test(navigator.platform);
+        const meta = isMac ? e.metaKey : e.ctrlKey;
+        if (!meta) return;
+
+        const shortcutMap = {
+            b: "bold",
+            i: "italic",
+            u: "underline",
+            k: "link",
+            "`": "code",
+        };
+
+        const key = e.key.toLowerCase();
+
+        if (key === "s") {
+            e.preventDefault();
+            saveToLocal(markdownInput ? markdownInput.value : "");
+            return;
+        }
+
+        if (key === "z") {
+            e.preventDefault();
+            if (e.shiftKey) { redo(); } else { undo(); }
+            return;
+        }
+
+        if (key === "y" && !e.shiftKey) {
+            e.preventDefault();
+            redo();
+            return;
+        }
+
+        if (!e.shiftKey && key in shortcutMap) {
+            e.preventDefault();
+            applyFormat(shortcutMap[key]);
+        }
+    }
+
+    /* ──────────── File I/O ──────────── */
+
+    function loadFromFile(file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            if (markdownInput) pushHistory(markdownInput.value);
+            if (markdownInput) markdownInput.value = evt.target.result;
+            renderFromMarkdown();
+            setStatus(`Loaded: ${file.name}`);
+        };
+        reader.onerror = () => setStatus("Error reading file");
+        reader.readAsText(file);
+    }
+
+    function exportMarkdown() {
+        if (!markdownInput) return;
+        const blob = new Blob([markdownInput.value], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const anchor = Object.assign(document.createElement("a"), { href: url, download: "document.md" });
+        anchor.click();
+        URL.revokeObjectURL(url);
+        setStatus("Exported document.md");
+    }
+
+    function exportPdf() {
+        if (!preview) return;
+        const win = window.open("", "_blank");
+        if (!win) { setStatus("Popup blocked — allow popups for PDF export"); return; }
+
+        const styles = `
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
@@ -374,64 +374,64 @@
         @page { margin: 0; }
       </style>`;
 
-    win.document.write(`<!DOCTYPE html><html><head><title>Document</title>${styles}</head><body>${preview.innerHTML}</body></html>`);
-    win.document.close();
-    win.addEventListener("load", () => { win.focus(); win.print(); });
-    setStatus("Print dialog opened");
-  }
+        win.document.write(`<!DOCTYPE html><html><head><title>Document</title>${styles}</head><body>${preview.innerHTML}</body></html>`);
+        win.document.close();
+        win.addEventListener("load", () => { win.focus(); win.print(); });
+        setStatus("Print dialog opened");
+    }
 
-  /* ──────────── Event bindings ──────────── */
+    /* ──────────── Event bindings ──────────── */
 
-  on(markdownInput, "input",   renderFromMarkdown);
-  on(markdownInput, "keydown", handleShortcut);
+    on(markdownInput, "input", renderFromMarkdown);
+    on(markdownInput, "keydown", handleShortcut);
 
-  on(preview, "input", renderFromPreview);
+    on(preview, "input", renderFromPreview);
 
-  on(preview, "paste", (e) => {
-    e.preventDefault();
-    const html = e.clipboardData.getData("text/html");
-    const text = e.clipboardData.getData("text/plain");
-    const safe = DOMPurify.sanitize(html || text, SANITIZE_OPTS);
-    document.execCommand("insertHTML", false, safe);
-  });
+    on(preview, "paste", (e) => {
+        e.preventDefault();
+        const html = e.clipboardData.getData("text/html");
+        const text = e.clipboardData.getData("text/plain");
+        const safe = DOMPurify.sanitize(html || text, SANITIZE_OPTS);
+        document.execCommand("insertHTML", false, safe);
+    });
 
-  formatButtons.forEach((btn) => on(btn, "click", () => applyFormat(btn.dataset.format)));
+    formatButtons.forEach((btn) => on(btn, "click", () => applyFormat(btn.dataset.format)));
 
-  on(loadFileBtn,    "click", () => filePicker && filePicker.click());
-  on(exportMdBtn,    "click", exportMarkdown);
-  on(exportPdfBtn,   "click", exportPdf);
-  on(saveNowBtn,     "click", () => saveToLocal(markdownInput ? markdownInput.value : ""));
+    on(loadFileBtn, "click", () => filePicker && filePicker.click());
+    on(exportMdBtn, "click", exportMarkdown);
+    on(exportPdfBtn, "click", exportPdf);
+    on(saveNowBtn, "click", () => saveToLocal(markdownInput ? markdownInput.value : ""));
 
-  on(clearAllBtn, "click", () => {
-    if (!markdownInput || !preview) return;
-    if (!confirm("Clear everything? This cannot be undone.")) return;
-    pushHistory(markdownInput.value);
-    markdownInput.value = "";
-    preview.innerHTML   = "";
-    saveToLocal("");
-    updateCounts();
+    on(clearAllBtn, "click", () => {
+        if (!markdownInput || !preview) return;
+        if (!confirm("Clear everything? This cannot be undone.")) return;
+        pushHistory(markdownInput.value);
+        markdownInput.value = "";
+        preview.innerHTML = "";
+        saveToLocal("");
+        updateCounts();
+        updateHistoryButtons();
+        setStatus("Cleared");
+    });
+
+    on(resetSampleBtn, "click", () => {
+        if (!markdownInput) return;
+        pushHistory(markdownInput.value);
+        markdownInput.value = STARTER_MARKDOWN;
+        renderFromMarkdown();
+        setStatus("Sample content loaded");
+    });
+
+    on(filePicker, "change", (e) => {
+        const [file] = e.target.files || [];
+        if (file) loadFromFile(file);
+        e.target.value = "";
+    });
+
+    on(undoBtn, "click", undo);
+    on(redoBtn, "click", redo);
+
+    /* ──────────── Init ──────────── */
+    restoreFromLocal();
     updateHistoryButtons();
-    setStatus("Cleared");
-  });
-
-  on(resetSampleBtn, "click", () => {
-    if (!markdownInput) return;
-    pushHistory(markdownInput.value);
-    markdownInput.value = STARTER_MARKDOWN;
-    renderFromMarkdown();
-    setStatus("Sample content loaded");
-  });
-
-  on(filePicker, "change", (e) => {
-    const [file] = e.target.files || [];
-    if (file) loadFromFile(file);
-    e.target.value = "";
-  });
-
-  on(undoBtn, "click", undo);
-  on(redoBtn, "click", redo);
-
-  /* ──────────── Init ──────────── */
-  restoreFromLocal();
-  updateHistoryButtons();
 })();
