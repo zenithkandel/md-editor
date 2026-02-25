@@ -10,6 +10,18 @@
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v7.2.0/css/fontawesome.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v7.2.0/css/solid.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v7.2.0/css/brands.css"
+    />
     <link rel="stylesheet" href="style.css" />
     <script
       src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
@@ -32,7 +44,9 @@
       target="_blank"
       rel="noopener"
       aria-label="Made by Zenith Kandel"
-      >Made by Zenith Kandel</a
+      ><i class="fa-solid fa-user"></i>
+      <span>Zenith Kandel</span>
+      <i class="fa-solid fa-arrow-up-right-from-square"></i></a
     >
 
     <main>
@@ -52,101 +66,109 @@
                 class="tool-btn"
                 id="undoBtn"
                 title="Undo (Ctrl+Z)"
+                aria-label="Undo"
                 disabled
               >
-                &#8630;
+                <i class="fa-solid fa-rotate-left"></i>
               </button>
               <button
                 class="tool-btn"
                 id="redoBtn"
                 title="Redo (Ctrl+Shift+Z)"
+                aria-label="Redo"
                 disabled
               >
-                &#8631;
+                <i class="fa-solid fa-rotate-right"></i>
               </button>
             </div>
             <div class="tool-sep"></div>
             <div class="tool-group">
-              <button class="tool-btn" data-format="h1" title="Heading 1">
-                H1
+              <button class="tool-btn" data-format="h1" title="Heading 1" aria-label="Heading 1">
+                <i class="fa-solid fa-heading"></i> 1
               </button>
-              <button class="tool-btn" data-format="h2" title="Heading 2">
-                H2
+              <button class="tool-btn" data-format="h2" title="Heading 2" aria-label="Heading 2">
+                <i class="fa-solid fa-heading"></i> 2
               </button>
-              <button class="tool-btn" data-format="h3" title="Heading 3">
-                H3
+              <button class="tool-btn" data-format="h3" title="Heading 3" aria-label="Heading 3">
+                <i class="fa-solid fa-heading"></i> 3
               </button>
             </div>
             <div class="tool-sep"></div>
             <div class="tool-group">
-              <button class="tool-btn" data-format="bold" title="Bold (Ctrl+B)">
-                <b>B</b>
+              <button class="tool-btn" data-format="bold" title="Bold (Ctrl+B)" aria-label="Bold">
+                <i class="fa-solid fa-bold"></i>
               </button>
               <button
                 class="tool-btn"
                 data-format="italic"
                 title="Italic (Ctrl+I)"
+                aria-label="Italic"
               >
-                <i>I</i>
+                <i class="fa-solid fa-italic"></i>
               </button>
               <button
                 class="tool-btn"
                 data-format="underline"
                 title="Underline (Ctrl+U)"
+                aria-label="Underline"
               >
-                <u>U</u>
+                <i class="fa-solid fa-underline"></i>
               </button>
               <button
                 class="tool-btn"
                 data-format="strike"
                 title="Strikethrough"
+                aria-label="Strikethrough"
               >
-                <s>S</s>
+                <i class="fa-solid fa-strikethrough"></i>
               </button>
             </div>
             <div class="tool-sep"></div>
             <div class="tool-group">
-              <button class="tool-btn" data-format="link" title="Link (Ctrl+K)">
-                Link
+              <button class="tool-btn" data-format="link" title="Link (Ctrl+K)" aria-label="Link">
+                <i class="fa-solid fa-link"></i>
               </button>
-              <button class="tool-btn" data-format="image" title="Image">
-                Img
+              <button class="tool-btn" data-format="image" title="Image" aria-label="Image">
+                <i class="fa-solid fa-image"></i>
               </button>
               <button
                 class="tool-btn"
                 data-format="code"
                 title="Inline code (Ctrl+`)"
+                aria-label="Inline code"
               >
-                Code
+                <i class="fa-solid fa-code"></i>
               </button>
               <button
                 class="tool-btn"
                 data-format="codeblock"
                 title="Code block"
+                aria-label="Code block"
               >
-                ```
+                <i class="fa-solid fa-rectangle-code"></i>
               </button>
             </div>
             <div class="tool-sep"></div>
             <div class="tool-group">
-              <button class="tool-btn" data-format="list" title="Bullet list">
-                • List
+              <button class="tool-btn" data-format="list" title="Bullet list" aria-label="Bullet list">
+                <i class="fa-solid fa-list-ul"></i>
               </button>
               <button
                 class="tool-btn"
                 data-format="olist"
                 title="Numbered list"
+                aria-label="Numbered list"
               >
-                1. List
+                <i class="fa-solid fa-list-ol"></i>
               </button>
-              <button class="tool-btn" data-format="quote" title="Blockquote">
-                Quote
+              <button class="tool-btn" data-format="quote" title="Blockquote" aria-label="Blockquote">
+                <i class="fa-solid fa-quote-left"></i>
               </button>
-              <button class="tool-btn" data-format="table" title="Table">
-                Table
+              <button class="tool-btn" data-format="table" title="Table" aria-label="Table">
+                <i class="fa-solid fa-table"></i>
               </button>
-              <button class="tool-btn" data-format="hr" title="Horizontal rule">
-                HR
+              <button class="tool-btn" data-format="hr" title="Horizontal rule" aria-label="Horizontal rule">
+                <i class="fa-solid fa-horizontal-rule"></i>
               </button>
             </div>
           </div>
@@ -183,12 +205,24 @@
           accept=".md,.markdown,.txt"
           style="display: none"
         />
-        <button class="ghost" id="loadFileBtn">Load .md</button>
-        <button class="ghost" id="exportMdBtn">Export .md</button>
-        <button class="ghost" id="exportPdfBtn">Export PDF</button>
-        <button class="ghost" id="resetSample">Sample</button>
-        <button class="ghost" id="clearAll">Clear</button>
-        <button class="ghost" id="saveNow">Save</button>
+        <button class="ghost" id="loadFileBtn" title="Load markdown" aria-label="Load markdown">
+          <i class="fa-solid fa-folder-open"></i><span class="sr-only">Load .md</span>
+        </button>
+        <button class="ghost" id="exportMdBtn" title="Export markdown" aria-label="Export markdown">
+          <i class="fa-solid fa-file-arrow-down"></i><span class="sr-only">Export .md</span>
+        </button>
+        <button class="ghost" id="exportPdfBtn" title="Export PDF" aria-label="Export PDF">
+          <i class="fa-solid fa-file-pdf"></i><span class="sr-only">Export PDF</span>
+        </button>
+        <button class="ghost" id="resetSample" title="Load sample" aria-label="Load sample">
+          <i class="fa-solid fa-sparkles"></i><span class="sr-only">Sample</span>
+        </button>
+        <button class="ghost" id="clearAll" title="Clear all" aria-label="Clear all">
+          <i class="fa-solid fa-trash"></i><span class="sr-only">Clear</span>
+        </button>
+        <button class="ghost" id="saveNow" title="Save now" aria-label="Save now">
+          <i class="fa-solid fa-floppy-disk"></i><span class="sr-only">Save</span>
+        </button>
         <span class="status" id="status">Ready</span>
       </section>
     </main>
