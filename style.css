@@ -339,11 +339,11 @@ footer {
     border: 1px solid var(--stroke);
     padding: 6px 12px;
     border-radius: 999px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
     transition: color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .portfolio-pill:hover {
     color: var(--accent);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
